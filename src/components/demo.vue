@@ -2,6 +2,8 @@
 import { ref } from "vue";
 import * as THREE from "three";
 import { onMounted } from "vue";
+// 引入轨道控制器扩展库OrbitControls.js
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 defineProps({
   msg: String,
@@ -11,11 +13,11 @@ function createDemo() {
   // 场景 scene
   const scene = new THREE.Scene();
   // 几何体，包含长方体，圆柱体，球体等
-  const geometry = new THREE.BoxGeometry(100, 100, 100);
+  const geometry = new THREE.BoxGeometry(100, 60, 20);
   // 物体外观：材质
-  const material = new THREE.MeshBasicMaterial({
+  const material = new THREE.MeshLambertMaterial({
     // color: 0xff0000, //0xff0000设置材质颜色为红色
-    color: 0x0000ff, //设置材质颜色
+    color: 0xff0000, //设置材质颜色
     transparent: true, //开启透明
     opacity: 0.5, //设置透明度
   });
@@ -24,8 +26,26 @@ function createDemo() {
   const mesh = new THREE.Mesh(geometry, material); //网格模型对象Mesh
 
   // 设置网格模型在三维空间中的位置坐标，默认是坐标原点
-  mesh.position.set(0, 10, 0);
+  mesh.position.set(0, 0, 0);
   scene.add(mesh);
+
+  const pointLight = new THREE.PointLight(0xffffff, 1.0);
+  pointLight.intensity = 1.0; //光照强度
+  pointLight.decay = 0.0; //设置光源不随距离衰减
+  pointLight.position.set(400, 200, 300); //点光源放在x轴上
+  scene.add(pointLight); //点光源添加到场景中
+
+  // AxesHelper：辅助观察的坐标系
+  const axesHelper = new THREE.AxesHelper(150);
+  scene.add(axesHelper);
+
+  // 光源辅助观察
+  const pointLightHelper = new THREE.PointLightHelper(pointLight, 10);
+  scene.add(pointLightHelper);
+
+  //环境光:没有特定方向，整体改变场景的光照明暗
+  const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+  scene.add(ambient);
 
   // 实例化一个透视投影相机对象
   const camera = new THREE.PerspectiveCamera();
@@ -45,6 +65,13 @@ function createDemo() {
   renderer.setSize(width, height); //设置three.js渲染区域的尺寸(像素px)
   renderer.render(scene, camera); //执行渲染操作
   document.getElementById("webgl").appendChild(renderer.domElement);
+
+  // 设置相机控件轨道控制器OrbitControls
+  const controls = new OrbitControls(camera, renderer.domElement);
+  // 如果OrbitControls改变了相机参数，重新调用渲染器渲染三维场景
+  controls.addEventListener("change", function () {
+    renderer.render(scene, camera); //执行渲染操作
+  }); //监听鼠标、键盘事件
 }
 
 onMounted(() => {
