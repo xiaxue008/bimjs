@@ -4,8 +4,8 @@ import * as THREE from "three";
 import { onMounted } from "vue";
 // 引入轨道控制器扩展库OrbitControls.js
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
 // 定义变量
 let scene, camera, renderer;
 let axesHelper;
@@ -18,7 +18,7 @@ window.addEventListener("resize", function () {
 });
 function initScene() {
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xededed);
+  scene.background = new THREE.Color(0xffffff);
 }
 function initAxesHelper() {
   axesHelper = new THREE.AxesHelper(5);
@@ -74,33 +74,43 @@ onMounted(() => {
   animate();
   // 初始化轨道控制器
   initControls();
+
   const loader = new GLTFLoader();
-  loader.load("../../static/gltf/test.glb", function (gltf) {
-    var model = gltf.scene;
-    scene.add(model);
-    console.log(gltf);
+  loader.load(
+    "../../static/gltf/SheenChair.glb",
+    function (gltf) {
+      var model = gltf.scene;
+      scene.add(model);
+      console.log(gltf);
 
-    // 计算模型的边界盒
-    var boundingBox = new THREE.Box3().setFromObject(model);
+      const object = scene.getObjectByName("SheenChair_fabric");
 
-    // 获取模型的尺寸
-    var size = boundingBox.getSize(new THREE.Vector3());
-    var center = boundingBox.getCenter(new THREE.Vector3());
+      // 计算模型的边界盒
+      var boundingBox = new THREE.Box3().setFromObject(model);
 
-    // 假设你希望模型的最大尺寸为1个单位
-    var maxDimension = Math.max(size.x, size.y, size.z);
-    var desiredMaxSize = 50; // 假设的最大尺寸
-    var scaleRatio = desiredMaxSize / maxDimension;
+      // 获取模型的尺寸
+      var size = boundingBox.getSize(new THREE.Vector3());
+      var center = boundingBox.getCenter(new THREE.Vector3());
 
-    // 应用缩放变换
-    model.scale.multiplyScalar(scaleRatio);
+      // 假设你希望模型的最大尺寸为1个单位
+      var maxDimension = Math.max(size.x, size.y, size.z);
+      var desiredMaxSize = 50; // 假设的最大尺寸
+      var scaleRatio = desiredMaxSize / maxDimension;
 
-    // 调整模型位置，使其位于原点
-    // 计算模型当前的中心偏移量，并将模型移动到场景的中心
-    var displacement = center.multiplyScalar(-1);
-    displacement.multiplyScalar(scaleRatio); // 保证位移量与缩放比例一致
-    model.position.add(displacement);
-  });
+      // 应用缩放变换
+      model.scale.multiplyScalar(scaleRatio);
+
+      // 调整模型位置，使其位于原点
+      // 计算模型当前的中心偏移量，并将模型移动到场景的中心
+      var displacement = center.multiplyScalar(-1);
+      displacement.multiplyScalar(scaleRatio); // 保证位移量与缩放比例一致
+      model.position.add(displacement);
+    },
+    undefined,
+    (err) => {
+      console.error(err);
+    }
+  );
 });
 </script>
 
